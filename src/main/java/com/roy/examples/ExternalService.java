@@ -3,30 +3,28 @@ package com.roy.examples;
 import com.roy.examples.exceptions.FatalException;
 import com.roy.examples.exceptions.TryAfterSometimeException;
 import com.roy.examples.exceptions.TryImmediatelyAgainException;
-import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Date;
 
-@Service
+@Component
 public class ExternalService {
 
-
-    private List<RuntimeException> exceptions = new ArrayList<>();
-
-    public ExternalService() {
-        this.exceptions.addAll(Arrays.asList(new FatalException()
-                , new TryAfterSometimeException(), new TryImmediatelyAgainException()));
-    }
+    Logger logger = LoggerFactory.getLogger(ExternalService.class);
 
     public void execute(String data) {
-        System.out.println("Executing on " + data + " at " + new Date());
-        if(data.contains("fatal")){
+        final String info = "Executing on " + data + " at " + new Date();
+        System.out.println(info);
+//        logger.info(info);
+        if(data.contains("hello")){
             throw new FatalException();
         }
-        if(data.contains("blocking")){
+        if(data.contains("greeting")){
             throw new TryImmediatelyAgainException();
         }
-        if(data.contains("non")){
+        if(data.contains("boo")){
             throw new TryAfterSometimeException();
         }
     }

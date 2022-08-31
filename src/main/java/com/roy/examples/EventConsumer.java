@@ -1,20 +1,24 @@
 package com.roy.examples;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.Headers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.Date;
 
 
-@Service
+@Configuration
+@EnableKafka
 public class EventConsumer {
+
+    Logger logger = LoggerFactory.getLogger(EventConsumer.class);
 
     final
     ExternalService externalService;
@@ -24,33 +28,31 @@ public class EventConsumer {
         this.externalService = externalService;
     }
 
-    @KafkaListener(topics = "kyc",groupId = "kyc-listener")
-    void onMessage(ConsumerRecord<String, String> data, Acknowledgment acknowledgment){
-        manageHeaders(data);
-
-        externalService.execute(data.value());
+    @RetryableTopic(attempts = "2")
+    @KafkaListener(topics = "kyc", groupId = "kyc-listener")
+    void onMessage(ConsumerRecord<String, String> data, Acknowledgment acknowledgment) {
+        final String value = data.value();
+        final String topic = data.topic();
+        final String info = String.format("Processing message %s from topic %s on %s"
+                , value, topic, new Date());
+        logger.info(info);
+        System.out.println(info);
+//        incrementAttemptCounter(data);
+        externalService.execute(value);
         acknowledgment.acknowledge();
     }
 
-    private void manageHeaders(ConsumerRecord<String, String> data) {
+    @KafkaListener(topics = {"kyc.DLT", "kyc-dlt"}, groupId = "kyc-dlt-listener")
+    void onDlt(ConsumerRecord<String, String> data, Acknowledgment acknowledgment) {
+        final String topic = data.topic();
+        final String value = data.value();
+        final String info = String.format("DLT topic : %s message %s", topic, value);
+        logger.info(info);
+    }
+
+    private void incrementAttemptCounter(ConsumerRecord<String, String> data) {
         final Headers headers = data.headers();
-        final List<Header> headerList = Arrays.asList(headers.toArray());
-        final Optional<Header> statusHeader = headerList.stream().filter(h -> h.key().contains("status")).findFirst();
-        if(statusHeader.isPresent()){
-            final Header header = statusHeader.get();
-            final String key = header.key();
-            System.out.println("Header key " + key);
-            final byte[] value = header.value();
-            final String stringValue = new String(value);
-            final int count = Integer.parseInt(stringValue);
-            System.out.println("Header value " + count);
-            final String newHeaderValue = String.valueOf(count + 1);
-            headers.remove("status");
-            headers.add("status",newHeaderValue.getBytes());
-        }
-        else{
-            headers.add("status","1".getBytes());
-        }
+        new EventHeaders(headers).incrementAttemptCounter();
     }
 
 

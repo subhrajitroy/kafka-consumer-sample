@@ -3,3 +3,4 @@ build
 dlt.txt
 encoded.txt
 .gradle
+logs/

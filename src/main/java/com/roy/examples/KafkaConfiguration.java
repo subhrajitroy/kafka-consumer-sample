@@ -40,13 +40,5 @@ public class KafkaConfiguration {
                 .build();
     }
 
-    @Bean
-    public RetryTopicConfiguration myRetryableTopic(KafkaTemplate<String, String> kafkaTemplate) {
-        return RetryTopicConfigurationBuilder
-                .newInstance()
-                .exponentialBackoff(2000,2,20000)
-                .includeTopics(singletonList(KYC_TOPICC_NAME))
-                .dltHandlerMethod(new EndpointHandlerMethod(DeadLetterTopicHandler.class,"process"))
-                .create(kafkaTemplate);
-    }
+
 }
