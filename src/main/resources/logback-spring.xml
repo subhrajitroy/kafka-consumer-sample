@@ -32,10 +32,10 @@
         </rollingPolicy>
     </appender>
 
-<!--    <root level="info">-->
+    <root level="info">
 <!--        <appender-ref ref="RollingFile" />-->
-<!--        <appender-ref ref="Console" />-->
-<!--    </root>-->
+        <appender-ref ref="Console" />
+    </root>
 
     <logger name="com.roy.examples" level="INFO" additivity="false">
         <appender-ref ref="RollingFile" />

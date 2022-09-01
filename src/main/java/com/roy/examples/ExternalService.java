@@ -18,13 +18,13 @@ public class ExternalService {
         final String info = "Executing on " + data + " at " + new Date();
         System.out.println(info);
 //        logger.info(info);
-        if(data.contains("hello")){
+        if(data.contains("never")){
             throw new FatalException();
         }
-        if(data.contains("greeting")){
+        if(data.contains("now")){
             throw new TryImmediatelyAgainException();
         }
-        if(data.contains("boo")){
+        if(data.contains("later")){
             throw new TryAfterSometimeException();
         }
     }
