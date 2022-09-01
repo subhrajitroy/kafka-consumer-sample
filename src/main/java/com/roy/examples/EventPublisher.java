@@ -1,8 +1,6 @@
 package com.roy.examples;
 
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -22,9 +20,9 @@ public class EventPublisher {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void pubishMesssage() {
+    public void publishMesssage(String message, String topic) {
         final ListenableFuture<SendResult<String, String>> send
-                = kafkaTemplate.send("kyc", "kycDocumentCreated");
+                = kafkaTemplate.send(topic, message);
         send.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
             @Override
             public void onFailure(Throwable ex) {
